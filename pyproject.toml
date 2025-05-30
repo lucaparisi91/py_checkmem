@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "checkmem"
+version = "0.0.1"
+dependencies = [
+    "numpy",
+    "pandas",
+    "mpi4py"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
