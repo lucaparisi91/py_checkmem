@@ -13,3 +13,6 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.scripts]
+checkmem = "checkmem.run:main"
