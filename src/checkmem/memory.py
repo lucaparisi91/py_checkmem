@@ -73,21 +73,33 @@ class NodeMemory(MemoryUsage):
 
         super().__init__(columns=["time","total","used","free","shared","buffers","cached"],min_mem=min_mem)
         
-    def __call__(self) -> np.ndarray:
+    def __call__(self) -> pd.DataFrame:
         cmd=r'free | grep Mem | awk "{if (\$3 > ' + str(self.min_mem) + r' ) print \$2,\$3,\$4,\$5,\$6,\$7}"'
         results= self._get_shell_info(cmd)[0]
 
         return pd.DataFrame( columns=self.columns,data= [(datetime.now().timestamp() - self.start_time,) + tuple( int(count) for count in results ) ] )
 
-# class ProcessorMemory(MemoryUsage):
 
-#     def __init__(self,min_mem=0):
+class ProcessorMemory(MemoryUsage):
 
-#         super().__init__(columns=["timestamp","total","used","free","shared","buffers","cached"],min_mem=min_mem)
+    def __init__(self,min_mem: float=0):
 
-#     def __call__(self) -> np.ndarray:
+        super().__init__(columns=["timestamp","rss","pid","cmd"],min_mem=min_mem)
+
+    def __call__(self):
+
+        cmd=r'ps -F | tail -n +2 | awk "{ if (\$6 >' +  str(self.min_mem) +r') print \$6,\$2,\$11 }"'
+        results=self._get_shell_info(cmd)
+        timestamp = datetime.now().timestamp() - self.start_time
         
-#         cmd=r'ps -F | tail -n +2 | awk "{ if (\$6 >' +  str(self.min_memory) +r') print \$6,\$2,\$11 }"'
+        data =pd.DataFrame( {
+            "timestamp" : [timestamp for i in range(len(results))],
+            "rss" : [  int(result[0]) for result in results ],
+            "pid" : [ str(result[1]) for result in results ],
+            "cmd" : [ str(result[2]) for result in results ],
+            }
+        )
 
-#         return self._get_memory_data(cmd)    
+        return data
+   
 
