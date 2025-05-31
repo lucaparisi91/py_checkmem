@@ -2,9 +2,17 @@
 
 A python script that polls memory usage from the os.
 
-## Testing 
+## Installation
 
-Use 
+You can build with pip.  
+
+```bash
+pip install .
+```
+
+## Testing
+
+Use
 
 ```bash
 
@@ -12,4 +20,12 @@ pytest  -vvv --capture=tee-sys checkmem/tests
 
 ```
 
-to run all the tests.
+## Usage
+
+The quickest way to get started is to run:
+
+```
+checkem
+```
+
+See `checkmem -h ` for a list of options.
