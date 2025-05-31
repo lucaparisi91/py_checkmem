@@ -2,6 +2,7 @@ import argparse
 import time
 from checkmem.memory import build_memory_recorder,MemoryStore
 from checkmem.termination import termination
+import sys 
 
 def main():
 
@@ -12,12 +13,13 @@ def main():
     parser.add_argument("--recorder_type", type=str, default="node", help="Defines what to record. Options are 'node' for node memory usage and 'process' for process memory usage.")
     parser.add_argument("--max_records", type=int, default=10, help="Maximum number of records to keep in memory before dumping to disk.")
     parser.add_argument("--name", type=str, default="checkmem_trace", help="Name of the memory trace.")
-    
+
     args = parser.parse_args()
     store= MemoryStore(args.name)
     recorder = build_memory_recorder(args.recorder_type)
 
     print("Starting checking memory")
+    sys.stdout.flush()
 
     terminator=termination()
 
