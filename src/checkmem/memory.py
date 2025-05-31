@@ -68,6 +68,7 @@ class MemoryUsage:
         return lines
     
 class NodeMemory(MemoryUsage):
+    """ A class to record memory usage on the node."""
 
     def __init__(self,min_mem=0):
 
