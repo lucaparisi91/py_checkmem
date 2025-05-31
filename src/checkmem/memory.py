@@ -12,21 +12,26 @@ class MemoryStore:
     The class is responsible for storing memory usage data in a DataFrame and saving it to a file.
     """    
 
-    def __init__(self,name,max_records=10):
-        self.max_records=max_records
+    def __init__(self,name):
         self.name=name
         self.dataset_name = "memory_usage"
         self.comm = MPI.COMM_WORLD
-        os.makedirs(self.name, exist_ok=True)
-        self.filename = os.path.join( name, "name" + str(self.comm.Get_rank()) + ".txt")
+        
+        os.makedirs(self.name,exist_ok=False)
+        
+        self.filename = os.path.join( name, str(self.comm.Get_rank()) + ".txt")
         self.reset_data()
+        self.first_dump = True
 
 
     def reset_data(self):
         self.mem_trace=[]
     
     def get_data(self):
-        return pd.concat(self.mem_trace).reset_index(drop=True)
+        if len(self.mem_trace)  == 0:
+            return pd.DataFrame()
+        else:
+            return pd.concat(self.mem_trace).reset_index(drop=True)
     
     def append(self,mem_snapshot : pd.DataFrame):
         """ Append a snapshot of the memory to the in-memory trace."""
@@ -35,9 +40,15 @@ class MemoryStore:
 
     def dump(self):
         """ Save the memory trace to the HDF5 file."""
-        self.get_data().to_csv(self.filename, mode='a', header=False, index=False,sep=" ")
+        sep=" "
+        
+        if (self.first_dump):
+            self.get_data().to_csv(self.filename,mode='w', header=True, index=False,sep=sep)
+            self.first_dump = False
+        else:
+            self.get_data().to_csv(self.filename, mode='a', header=False, index=False,sep=" ")
         self.reset_data()
-
+        
 
 class MemoryUsage:
     """ A class to record memory usage snapshots"""
