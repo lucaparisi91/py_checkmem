@@ -17,9 +17,9 @@ class MemoryStore:
         self.dataset_name = "memory_usage"
         self.comm = MPI.COMM_WORLD
         
-        os.makedirs(self.name,exist_ok=False)
+        os.makedirs(self.name,exist_ok=True)
         
-        self.filename = os.path.join( name, str(self.comm.Get_rank()) + ".txt")
+        self.filename = os.path.join( name, "trace" + str(self.comm.Get_rank()) + ".txt")
         self.reset_data()
         self.first_dump = True
 
@@ -91,7 +91,7 @@ class ProcessorMemory(MemoryUsage):
         cmd=r'ps -F | tail -n +2 | awk "{ if (\$6 >' +  str(self.min_mem) +r') print \$6,\$2,\$11 }"'
         results=self._get_shell_info(cmd)
         timestamp = datetime.now().timestamp() - self.start_time
-        
+
         data =pd.DataFrame( {
             "timestamp" : [timestamp for i in range(len(results))],
             "rss" : [  int(result[0]) for result in results ],
@@ -103,3 +103,11 @@ class ProcessorMemory(MemoryUsage):
         return data
    
 
+def build_memory_recorder(type,*args,**kwds):
+    """ Factory function to create a memory recorder based on the type."""
+    if type == "node":
+        return NodeMemory(*args,**kwds)
+    elif type == "process":
+        return ProcessorMemory(*args,**kwds)
+    else:
+        raise ValueError(f"Unknown memory recorder type: {type}")
