@@ -70,3 +70,14 @@ def test_store_processor_memory(experiment_directory):
     data["rss"] = pytest.approx(stored_data["rss"])
     data["pid"] = stored_data["rss"]
     data["cmd"] = stored_data["cmd"]
+
+
+
+def test_filter_processor_memory():
+
+    mem_usage = ProcessorMemory(patterns=["python"])
+    assert len(mem_usage()) > 0
+
+    mem_usage = ProcessorMemory(patterns=["python","bash"])    
+    assert len(mem_usage()) > 1
+    

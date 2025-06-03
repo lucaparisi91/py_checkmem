@@ -4,6 +4,8 @@ import subprocess
 import pandas as pd
 from mpi4py import MPI
 import os
+import re
+from collections.abc import Iterable
 
 
 class MemoryStore:
@@ -104,13 +106,49 @@ class NodeMemory(MemoryUsage):
         )
 
 
-class ProcessorMemory(MemoryUsage):
+class MemoryTools:
 
-    def __init__(self, min_mem: float = 0):
+    @staticmethod
+    def filter(data,patterns,column):
+        """ Filter data based on list of regexes to apply to the command line.
+        
+        Args:
+            data: DataFrame to filter
+            patters: A list of regular expressions to apply to the command line.
+            column: column name to apply the filter on.
+
+        Returns:
+            A Dataframe containing only the rows where the commmand line matches on of the provided patterns.
+        """
+        
+        def satisfy_patterns(patterns,cmd):
+            satisfied= False
+            for pattern in patterns:
+                satisfied = satisfied or len(re.findall(pattern,cmd))>0
+            return satisfied
+        
+        filter = [ satisfy_patterns(patterns,cmd) for cmd in data[column] ]    
+        return data[filter]
+
+class ProcessorMemory(MemoryUsage):
+    
+    def __init__(self, min_mem: float = 0, patterns: Iterable[str] = [] ):
+        """A class to record memory usage of processes.
+
+        Args:
+            min_men: Minimum memory usage in KB to filter processes.
+            patterns: A list of regex. If defined, only return processes whose command line matches on of the pattern.
+        
+        """
 
         super().__init__(columns=["timestamp", "rss", "pid", "cmd"], min_mem=min_mem)
+        self.patterns = patterns
+
+        
+       
 
     def __call__(self):
+        """Get the memory usage of processes on the node from running a shell script"""
 
         cmd = (
             r'ps -F | tail -n +2 | awk "{ if (\$6 >'
@@ -129,10 +167,14 @@ class ProcessorMemory(MemoryUsage):
             }
         )
 
-        return data
+        if len(self.patterns) is not None:
+            return MemoryTools.filter(data,self.patterns,column="cmd")
+        else:
+            return data
 
 
-def build_memory_recorder(type, *args, **kwds):
+
+def build_memory_recorder(type,*args,**kwds):
     """Factory function to create a memory recorder based on the type."""
     if type == "node":
         return NodeMemory(*args, **kwds)

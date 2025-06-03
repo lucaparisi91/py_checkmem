@@ -38,10 +38,14 @@ def main():
     parser.add_argument(
         "--name", type=str, default="checkmem_trace", help="Name of the memory trace."
     )
-
+    parser.add_argument(
+        "--patterns", type=str, nargs='+',default=None, help="A List of regexes to filter processes. Include all processes whose command line match at least one of the given regexes."
+    )
+    
     args = parser.parse_args()
     store = MemoryStore(args.name)
-    recorder = build_memory_recorder(args.recorder_type)
+    recorder = build_memory_recorder(args.recorder_type,patterns=args.patterns,min_mem=args.min_mem)
+
 
     print("Starting checking memory")
     sys.stdout.flush()
