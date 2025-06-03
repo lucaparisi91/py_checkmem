@@ -30,3 +30,12 @@ checkem
 ```
 
 See `checkmem -h ` for a list of options.
+
+To run on multiple nodes you will need to launch checkmem on each node in the background and then send a SIGINT signal to checkmem to ensure its clean termination.
+
+```bash
+srun --hint=nomultithread --distribution=block:block --ntasks=32 --nodes=32 --ntasks-per-node=1 --overlap checkmem --recorder_type process &
+sleep 30 # Make sure checkmem started
+srun --hint=nomultithread --distribution=block:block my_app # Launch you application as usual
+scancel --signal=INT $SLURM_JOB_ID.0 # Stop monitoring memory and close safely
+```
