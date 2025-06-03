@@ -38,4 +38,5 @@ srun --hint=nomultithread --distribution=block:block --ntasks=32 --nodes=32 --nt
 sleep 30 # Make sure checkmem started
 srun --hint=nomultithread --distribution=block:block my_app # Launch you application as usual
 scancel --signal=INT $SLURM_JOB_ID.0 # Stop monitoring memory and close safely
+wait
 ```
